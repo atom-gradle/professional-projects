@@ -5,10 +5,9 @@ Welcome to my professional projects repository! This is a collection of programm
 ## 📁 Projects
 
 ### 1.玉米表型采析系统-后端(./CCNUpromax-Backend/)
-A backend supporting the frontend Wechat micro application, developed using Spring Boot.
-**项目链接：**  [CCNUpromax-Backend](https://github.com/atom-gradle/professional-projects/tree/main/CCNUpromax)
-**技术栈：** `Java` `SpringBoot` `MySQL` `MyBatis-Plus` `RabbitMQ` `JWT`
+**技术栈：** 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot) [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)](https://www.mysql.com/) [![Redis](https://img.shields.io/badge/Redis-6.0-DC382D?logo=redis)](https://redis.io/) [![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.4.3-000000)](https://baomidou.com/)
+
 **项目描述：**  
 玉米表型采析系统后端，支持微信登录、采集记录上传、算法微服务调用、分析报告生成。本人独立完成后端代码编写、迭代优化及生产环境部署。
 
@@ -20,9 +19,11 @@ A backend supporting the frontend Wechat micro application, developed using Spri
     
 -   **服务部署与运维**：基于 `Docker` 打包后端服务，部署至阿里云 ECS；配置域名、DNS 及 TLS 证书，通过 `Nginx` 反向代理实现 HTTPS 访问
 
+
 ### 2.NIO-Turbo(./NIOTurbo/)（从0实现的基于NIO的高性能TCP服务器）
-A TCP server with high cuccurency based on **Reactor** architecture, supporting customized message protocol, developed with help of java.nio APIs.
+
 **技术栈：** `Java 21`  `NIO` `ExecutorService` `VirtualThread`
+
 **项目描述：**  
 从0手写实现基于 Reactor 模式的 TCP 服务器，自定义消息体，支持高并发场景下的消息解析与处理。
 
