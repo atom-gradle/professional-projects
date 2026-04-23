@@ -116,8 +116,29 @@ public class MsgPool {
 
 ### 3.消息完整性校验
 ```java
+subExecutor.execute(() -> {
+    try {
+        Msg recoveredMsg = new Msg(data);
+        recoveredMsg.setLength(msgLength);
 
+        String response;
+        if(!Util.verifyMsg(recoveredMsg)) {
+            System.out.println("Validation Failed");
+            response = "FAIL: Invalid message checksum";
+        } else {
+            System.out.println(recoveredMsg);
+            response = "ACK: Message received and verified successfully";
+        }
+
+        // 发送响应给客户端
+        sendResponse(client, response);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+});
 ```
+调用`Util.verifyMsg(String msg)`对接收到的Msg进行完整性校验，完整则响应客户端`"ACK: Message received and verified successfully"`，否则响应`"FAIL: Invalid message checksum"`
 
 ## 性能测试
 ### 测试环境
