@@ -2,6 +2,12 @@
 
 Welcome to my professional projects repository! This is a collection of programming projects for job-seeking.
 
+## About Me
+
+- 🎓 华中农业大学 (211) 计算机科学与技术 2024级
+- 📝 CET-6 638分
+- 🔭 正在寻找后端开发日常实习
+
 ## 📁 Projects
 
 ### 1.玉米表型采析系统-后端(./CCNUpromax-Backend/)
@@ -35,3 +41,6 @@ Welcome to my professional projects repository! This is a collection of programm
     
 -   **性能验证**：使用高并发压测客户端测试，在轻薄本PC上达到 **100%消息成功解析率，0.06ms平均延迟，7000+ QPS，1000客户端** 稳定处理
 
+## Contact Me
+
+- 📧 pro.gradle@outlook.com
