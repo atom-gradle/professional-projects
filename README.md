@@ -38,8 +38,8 @@ Welcome to my professional projects repository! This is a collection of programm
 -   **对象池优化**：借鉴享元模式思想，涉及Msg消息体对象池MsgPool，通过复用已有对象，**有效减少对象在新生代和老年代之间的拷贝和GC停顿**，提升系统吞吐量
     
 - **性能验证**：模拟1000个并发连接，每连接发送100条消息（含MD5校验+ACK响应），在R7 8845H轻薄本，localhost测得：
-  - **端到端吞吐量**：6,700+ QPS
-  - **平均响应延迟**：24.6ms
+  - **端到端吞吐量**：6,600+ QPS
+  - **平均响应延迟**：25.37 ms
   - **成功率**：100%（10万消息0丢失）
 
 ## Contact Me
