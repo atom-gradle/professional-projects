@@ -24,6 +24,7 @@
 | Maven | 3.8+ | 构建工具 |
 
 ## 📁 项目结构
+```bash
 NIOTurbo/
 ├── MainReactor.java # 主Reactor（处理连接）
 ├── SubReactor.java # 从Reactor（处理IO）
@@ -32,7 +33,7 @@ NIOTurbo/
 ├── Util.java # 工具类（MD5校验）
 ├── HighConcurrentTestClient.java # 高并发压测客户端
 └── Main.java # 服务端启动类
-
+```
 
 ## 🚀 快速开始
 
@@ -47,13 +48,16 @@ java NIOTurbo.MainReactor
 ```
 
 输出：
+```bash
 Server launches, listening for port 8000
 SubReactor launched
 SubReactor launched
 ...
+```
 
-运行压测客户端
+### 启动高并发压测客户端
 ```bash
+# 运行
 java NIOTurbo.HighConcurrentTestClient
 ```
 
@@ -65,6 +69,7 @@ java NIOTurbo.HighConcurrentTestClient
 +----------+--------------------+
 
 ### 消息示例
+```bash
 Msg {
     from='VT_923', 
     to='Server', 
@@ -75,7 +80,23 @@ Msg {
     content='Msg_923_98', 
     MD5Check='26fd1aa197c82f0d75f67f6a1b26eafd'
 }
+```
 
+### 1.多线程模型
+```java
+// MainReactor：处理连接
+public void accept(SelectionKey key) {
+    SocketChannel client = server.accept();
+    client.configureBlocking(false);
+    subReactors[nextIndex].register(client);
+}
+
+// SubReactor：处理读写
+public void read(SelectionKey key) {
+    // 读取消息 → 校验 → 提交到线程池
+    subExecutor.execute(() -> handleMessage());
+}
+```
 
 ### 2.对象池优化
 ```java
@@ -93,3 +114,23 @@ public class MsgPool {
     }
 }
 ```
+
+### 3.消息完整性校验
+```java
+
+```
+
+## 性能测试
+
+
+### 压测结果
+========== 测试结果 ==========
+总耗时: 14.84 秒
+虚拟线程数: 1000
+总消息数: 100000
+成功消息: 100000
+失败消息: 0
+成功率: 100.00%
+平均延迟: 24.57 ms
+QPS: 6,737.18 消息/秒
+================================
