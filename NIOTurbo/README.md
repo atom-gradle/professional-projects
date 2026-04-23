@@ -44,6 +44,7 @@ javac NIOTurbo/*.java
 
 # 运行
 java NIOTurbo.MainReactor
+```
 
 输出：
 Server launches, listening for port 8000
@@ -52,7 +53,9 @@ SubReactor launched
 ...
 
 运行压测客户端
+```bash
 java NIOTurbo.HighConcurrentTestClient
+```
 
 ## 自定义协议
 ### 消息格式
@@ -75,6 +78,7 @@ Msg {
 
 
 ### 2.对象池优化
+```java
 public class MsgPool {
     private final Queue<Msg> pool = new ConcurrentLinkedQueue<>();
     
@@ -88,3 +92,4 @@ public class MsgPool {
         pool.offer(msg);
     }
 }
+```
