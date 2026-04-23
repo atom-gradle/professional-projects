@@ -61,14 +61,14 @@ java NIOTurbo.HighConcurrentTestClient
 ### 消息示例
 ```json
 Msg {
-    length='144',
+    length='145',
     from='张三', 
     to='李四', 
     when='2026-04-22T22:01:47', 
     type=1, 
     state=0, 
     fileExt='txt', 
-    content='Hello.This is ZhangSan', 
+    content='Hello.This is ZhangSan.', 
     MD5Check='26fd1aa197c82f0d75f67f6a1b26eafd'
 }
 ```
@@ -77,17 +77,101 @@ Msg {
 ```java
 // MainReactor：处理连接
 public void accept(SelectionKey key) {
-    SocketChannel client = server.accept();
-    client.configureBlocking(false);
-    subReactors[nextIndex].register(client);
+    ServerSocketChannel server = (ServerSocketChannel)key.channel();
+    SocketChannel client = null;
+    try {
+        client = server.accept();
+        client.configureBlocking(false);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+    SubReactor subReactor = subReactors[nextSubReactorIndex];
+    nextSubReactorIndex = (nextSubReactorIndex + 1) % subReactors.length;
+    try {
+        subReactor.register(client);
+    } catch (ClosedChannelException e) {
+        throw new RuntimeException(e);
+    }
 }
 
 // SubReactor：处理读写
 public void read(SelectionKey key) {
-    // 读取消息 → 校验 → 提交到线程池
-    subExecutor.execute(() -> handleMessage());
+    SocketChannel client = (SocketChannel) key.channel();
+
+    try {
+        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        int bytesRead = client.read(lengthBuffer);
+
+        if (bytesRead == -1) {
+            // 连接关闭
+            key.cancel();
+            client.close();
+            System.out.println("Client disconnected");
+            return;
+        }
+
+        if (bytesRead < 4) {
+            // 没读完整，继续等待
+            return;
+        }
+
+        lengthBuffer.flip();
+        int msgLength = lengthBuffer.getInt();
+
+        if (msgLength <= 0 || msgLength > 8192) {
+            System.out.println("Invalid message length: " + msgLength);
+            key.cancel();
+            client.close();
+            return;
+        }
+
+        // 读取消息体
+        ByteBuffer msgBuffer = ByteBuffer.allocate(msgLength);
+        while (msgBuffer.hasRemaining()) {
+            bytesRead = client.read(msgBuffer);
+            if (bytesRead == -1) {
+                return;
+            }
+        }
+
+        msgBuffer.flip();
+        byte[] data = new byte[msgLength];
+        msgBuffer.get(data);
+
+        subExecutor.execute(() -> {
+            try {
+                Msg recoveredMsg = new Msg(data);
+                recoveredMsg.setLength(msgLength);
+
+                String response;
+                if(!Util.verifyMsg(recoveredMsg)) {
+                    System.out.println("Validation Failed");
+                    response = "FAIL: Invalid message checksum";
+                } else {
+                    System.out.println(recoveredMsg);
+                    response = "ACK: Message received and verified successfully";
+                }
+
+                // 响应回复客户端
+                sendResponse(client, response);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+    } catch (IOException e) {
+        System.out.println("Error reading from client: " + e.getMessage());
+        try {
+            key.cancel();
+            client.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 }
 ```
+分离连接请求和业务IO，极大提升系统吞吐量
 
 ### 2.对象池优化
 ```java
@@ -138,21 +222,22 @@ subExecutor.execute(() -> {
 | 配置 | 参数 |
 |------|------|
 | Java | 21 |
-| CPU | R7 8845H |
+| CPU | R7 8845H (16T) |
 | OS | Windows 11 25H2 |
 | 网络 | localhost |
-| 客户端总数 | 1000 |
+| 客户端总数 | 1,000 |
 | 每个客户端发送消息数 | 100 |
 | 总消息数 | 100,000 |
 
 ### 压测结果
 | 指标 | 数值 | 说明 |
 |------|------|------|
-| 总耗时 | 14.84秒 | 包含连接间隔 |
+| 总耗时 | 14.93秒 | 包含初始连接耗时 |
 | 成功接收并解析消息数 | 100,000 |
 | 成功率 | 100.00& |
-| 平均延迟 | 24.57ms |
-| QPS | 6,737,18 消息/秒 |
+| 平均延迟 | 25.37ms |
+| QPS | 6,697.48 消息/秒 |
 
 ### 测试说明
 本测试要求服务端接收消息，并校验MD5值之后，向客户端返回ACK消息，客户端发送这条消息的线程收到ACK响应后，才发送下一条消息，所以客户端所测得QPS=服务端QPS
+本项目根目录下有压力测试视频 `NOITurbo压力测试.mp4` 和 测试结果截图 `测试结果.jpg`
