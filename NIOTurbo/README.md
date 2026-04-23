@@ -14,14 +14,6 @@
 - **虚拟线程支持**：使用Java 21虚拟线程处理业务逻辑
 - **完整的压测验证**：高并发压测客户端，测量端到端性能
 
-## 🛠️ 技术栈
-
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Java | 21 | 核心语言 |
-| NIO | - | 非阻塞IO |
-| Virtual Thread | - | 高并发业务处理 |
-
 ## 📁 项目结构
 ```bash
 NIOTurbo/
@@ -62,21 +54,21 @@ java NIOTurbo.HighConcurrentTestClient
 
 ## 自定义协议
 ### 消息格式
-+----------+--------------------+
-| 4 bytes  |    variable        |
-| 消息长度  |    消息体          |
-+----------+--------------------+
+| 长度 | 4 B | 30 B | B | 19 B | 4B | 4B | 3B | variable | 32 B |
+|------|------|------|------|------|------|------|------|------|------|
+| 字段 | length | from | to | when | type | state | fileExt | content | md5check |
 
 ### 消息示例
-```bash
+```json
 Msg {
-    from='VT_923', 
-    to='Server', 
+    length='144',
+    from='张三', 
+    to='李四', 
     when='2026-04-22T22:01:47', 
     type=1, 
     state=0, 
     fileExt='txt', 
-    content='Msg_923_98', 
+    content='Hello.This is ZhangSan', 
     MD5Check='26fd1aa197c82f0d75f67f6a1b26eafd'
 }
 ```
@@ -113,6 +105,7 @@ public class MsgPool {
     }
 }
 ```
+借鉴享元模式和池化思想，复用Msg对象，减少对象在新生代之间、新生代和老年代之间的拷贝，减少GC停顿
 
 ### 3.消息完整性校验
 ```java
