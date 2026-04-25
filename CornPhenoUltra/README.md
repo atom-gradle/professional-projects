@@ -48,7 +48,7 @@ src/main/java/com/qian/
 │ ├── request
 │ ├── response
 │ ├── AnalysisRequestMessage.java
-│ ├── AnalysisTaskRequest.java
+│ └── AnalysisTaskRequest.java
 ├── exception/ # 自定义异常类
 │ ├── AuthenticationFailureException.java # 认证异常
 │ ├── BusinessException.java # 业务异常
@@ -62,7 +62,7 @@ src/main/java/com/qian/
 │ ├── AnalysisReport.java # 分析报告实体类
 │ ├── CaptureRecord.java # 采集记录实体类
 │ ├── MediaFile.java # 媒体文件实体类
-│ ├── User.java # 用户实体类
+│ └── User.java # 用户实体类
 ├── utils/ # 工具类
 │ ├── CurrentHolder # ThreadLocal 工具类
 │ ├── FFmpegUtil # FFmpeg 调用工具类
@@ -117,6 +117,9 @@ wx:
 #### 3.运行
 
 ```bash
+# 配置数据库
+musqldump -u your_username -p db_cornpheno_backup.sql
+
 # 开发环境
 mvn spring-boot:run
 
@@ -365,23 +368,87 @@ public void handleDeadLetter(Message message, Channel channel,
 ```SQL
 explain ...;
 ```
-`EXPLAIN` 查看语句执行
+`EXPLAIN` 查看语句执行情况
+
+```bash
+mysql> explain  SELECT
+    ->  cr.block_id,
+    ->  cr.variety_name,
+    ->  cr.sample_type,
+    ->  COUNT(*) as sample_count,
+    ->  MIN(cr.create_time) as first_collect_time,
+    ->  MAX(cr.update_time) as last_update_time
+    ->  FROM capture_record cr
+    ->  LEFT JOIN media_file mf ON mf.capture_id = cr.id
+    ->  WHERE cr.status between 1 and 3  -- 已完成分析的
+    ->  AND cr.block_id IN ('BLOCK_D01', 'BLOCK_B01', 'BLOCK_E01')
+    ->  AND cr.create_time BETWEEN '2026-01-01 00:00:00' AND '2026-12-31 00:00:00'
+    ->  GROUP BY cr.block_id, cr.variety_name, cr.sample_type
+    ->  ORDER BY cr.block_id, sample_count DESC;
++----+-------------+-------+------------+------+----------------+----------------+---------+--------------------+--------+----------+----------------------------------------------+
+| id | select_type | table | partitions | type | possible_keys  | key            | key_len | ref                | rows   | filtered | Extra                                        |
++----+-------------+-------+------------+------+----------------+----------------+---------+--------------------+--------+----------+----------------------------------------------+
+|  1 | SIMPLE      | cr    | NULL       | ALL  | NULL           | NULL           | NULL    | NULL               | 489450 |     0.37 | Using where; Using temporary; Using filesort |
+|  1 | SIMPLE      | mf    | NULL       | ref  | idx_capture_fk | idx_capture_fk | 8       | db_cornpheno.cr.id |      1 |   100.00 | Using index                                  |
++----+-------------+-------+------------+------+----------------+----------------+---------+--------------------+--------+----------+----------------------------------------------+
+2 rows in set, 1 warning (0.01 sec)
+```
 
 ```SQL
 show index in capture_record;
 
-select count(distinct block_id),count(distinct variety_name) from capture_record;
+select count(distinct block_id),count(distinct variety_name),count(distinct status),count(distinct sample_type) from capture_record;
 ```
-`SHOW INDEX` `cadinality`分析字段选择性，其中`block_id`的`cardinality`为9，`variety_name`字段的`cardinality`为
+
+```bash
+mysql> show index in capture_record;
++----------------+------------+-----------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+------------------------------------------------------------+---------+------------+
+| Table          | Non_unique | Key_name        | Seq_in_index | Column_name  | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment                                              | Visible | Expression |
++----------------+------------+-----------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+------------------------------------------------------------+---------+------------+
+| capture_record |          0 | PRIMARY         |            1 | id           | A         |      501995 |     NULL |   NULL |      | BTREE      |         |                                                            | YES     | NULL       |
+| capture_record |          0 | capture_id      |            1 | capture_id   | A         |      418770 |     NULL |   NULL |      | BTREE      |         |                                                            | YES     | NULL       |
+| capture_record |          1 | idx_user_id     |            1 | user_id      | A         |        2835 |     NULL |   NULL |      | BTREE      |         |                                                            | YES     | NULL       |
+| capture_record |          1 | idx_cover_group |            1 | block_id     | A         |           9 |     NULL |   NULL |      | BTREE      |         | 查询某个地块在时间段 内的所有采集记录，按品种统计的复合索引 | YES     | NULL       |
+| capture_record |          1 | idx_cover_group |            2 | create_time  | A         |      334730 |     NULL |   NULL | YES  | BTREE      |         | 查询某个地块在时间段 内的所有采集记录，按品种统计的复合索引 | YES     | NULL       |
+| capture_record |          1 | idx_cover_group |            3 | status       | A         |      465504 |     NULL |   NULL | YES  | BTREE      |         | 查询某个地块在时间段 内的所有采集记录，按品种统计的复合索引 | YES     | NULL       |
+| capture_record |          1 | idx_cover_group |            4 | variety_name | A         |      501995 |     NULL |   NULL | YES  | BTREE      |         | 查询某个地块在时间段 内的所有采集记录，按品种统计的复合索引 | YES     | NULL       |
+| capture_record |          1 | idx_cover_group |            5 | sample_type  | A         |      501995 |     NULL |   NULL |      | BTREE      |         | 查询某个地块在时间段 内的所有采集记录，按品种统计的复合索引 | YES     | NULL       |
+| capture_record |          1 | idx_cover_group |            6 | update_time  | A         |      501995 |     NULL |   NULL | YES  | BTREE      |         | 查询某个地块在时间段 内的所有采集记录，按品种统计的复合索引 | YES     | NULL       |
++----------------+------------+-----------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+------------------------------------------------------------+---------+------------+
+9 rows in set (0.02 sec)
+```
+
+`SHOW INDEX` `cadinality`分析字段选择性，其中`block_id`的`cardinality`为9，`variety_name`字段的`cardinality`为501,995，不准确，原因在于`variety_name`列允许NULL值，而MySQL默认抽样20页统计，所以统计不准确
+结合`count(distince field)`查看和评估选择性
+```bash
+mysql> select count(distinct block_id),count(distinct variety_name),count(distinct status),count(distinct sample_type) from capture_record;
++--------------------------+------------------------------+------------------------+-----------------------------+
+| count(distinct block_id) | count(distinct variety_name) | count(distinct status) | count(distinct sample_type) |
++--------------------------+------------------------------+------------------------+-----------------------------+
+|                       10 |                           20 |                      5 |                           5 |
++--------------------------+------------------------------+------------------------+-----------------------------+
+1 row in set (0.33 sec)
+```
+设计复合索引，顺序为(`block_id`,`create_time`,`status`,`variety_name`,`sample_type`,`update_time`)
+
+```bash
++----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
+| id | select_type | table | partitions | type  | possible_keys   | key             | key_len | ref                | rows   | filtered | Extra                                                     |
++----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
+|  1 | SIMPLE      | cr    | NULL       | range | idx_cover_group | idx_cover_group | 138     | NULL               | 304688 |    11.11 | Using where; Using index; Using temporary; Using filesort |
+|  1 | SIMPLE      | mf    | NULL       | ref   | idx_capture_fk  | idx_capture_fk  | 8       | db_cornpheno.cr.id |      1 |   100.00 | Using index                                               |
++----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
+2 rows in set, 1 warning (0.02 sec)
+```
 
 ### 优化结果
 | 指标 | 优化前 | 优化后 | 提升 |
 |------|------|------|------|
-| 查询耗时 | 1.0s | 0.4s | 60% |
-| 扫描行数	51万（全表） | <1000（索引范围） | 99%+ |
-| 是否回表 | 是 | 否（覆盖索引）| ✅|
+| 查询耗时 | 约1.15s | 稳定0.37s | 60% |
+| 扫描行数 | 51万（全表） | <1000（索引范围） | 99%+ |
+| 是否回表 | 是 | 否（覆盖索引）| ✅ |
+
 测试说明：数据量 51 万条，MySQL 8.0，Buffer Pool 已预热，取稳定后耗时
-约1.15s -> 稳定0.37s
 
 ## 部署
 
