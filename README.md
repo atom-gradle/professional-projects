@@ -1,5 +1,6 @@
 # professional-projects
 
+欢迎来到professional-projects仓库！这里放着我的求职作品。
 Welcome to my professional projects repository! This is a collection of programming projects for job-seeking.
 
 ## About Me
@@ -19,14 +20,14 @@ Welcome to my professional projects repository! This is a collection of programm
 
 -   **用户认证与鉴权**：基于 `Interceptor` + `JWT` 实现无状态认证，结合 `ThreadLocal` 完成用户身份线程级绑定，拦截未登录请求，**保障接口安全性**
     
-- **数据库索引优化**：通过 `EXPLAIN` 分析执行计划，结合 `SHOW INDEX` 中的 `cardinality` 字段评估索引选择性，针对复杂统计查询（多条件筛选 + 分组聚合）设计**覆盖索引**。在 **51万条数据** 规模下，查询耗时从 **1.0s 降至 0.4s**，降低约 **60%**
+- **数据库索引优化**：通过 `EXPLAIN` 分析执行计划，结合 `SHOW INDEX` 中的 `cardinality` 字段评估索引选择性，针对复杂统计查询（多条件筛选 + 分组聚合）设计**覆盖索引**。在 **51万条数据** 规模下，查询耗时从 **1.15s 降至 0.37s**，降低约 **60%**
     
--   **异步处理与解耦**：使用 `DeferredResult` + `RabbitMQ` 异步调用分析服务，释放请求线程，**提升系统吞吐量**；通过消息确认机制保证任务不丢失
+-   **异步处理与解耦**：使用 `DeferredResult` + `RabbitMQ` 异步调用算法服务，释放请求线程，**提升系统吞吐量**；通过消息确认机制保证任务不丢失，加入死信队列，实现更健全的处理机制
     
 -   **服务部署与运维**：基于 `Docker` 打包后端服务，部署至阿里云 ECS；配置域名、DNS服务 及 TLS 证书，通过 `Nginx` 反向代理实现 HTTPS 访问
 
 ### 2.[NIO-Turbo](./NIOTurbo/)（从0实现的基于NIO的高性能TCP服务器）
-**技术栈：** `Java 21`  (`NIO` `ExecutorService` `VirtualThread`)
+**技术栈：** `Java 21` `NIO` `Reactor模式`
 
 **项目描述：**  
 从0手写实现基于 Reactor 模式的 TCP 服务器，自定义消息体，支持高并发场景下的消息解析与处理。
