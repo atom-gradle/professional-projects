@@ -1,0 +1,70 @@
+server:
+  port: 8080
+
+# 数据源配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/db_cornpheno?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    username: root
+    password: 123456
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+  rabbitmq:
+    host: localhost
+    port: 5672
+    listener:
+      simple:
+        acknowledge-mode: auto # 自动确认消息
+        retry:
+          enabled: true # 开启消费者重试
+          max-attempts: 3 # 最大重试次数
+          multiplier: 2.0
+
+logging:  #日志级别设置
+  level:
+    top.javatool.canal.client.client.AbstractCanalClient: debug  # 屏蔽 INFO 日志
+
+mybatis-plus:
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+    map-underscore-to-camel-case: true
+  type-aliases-package: com.qian.pojo
+  global-config:
+    db-config:
+      id-type: auto # 全局id类型为自增长
+      logic-delete-field: deleted # 配置逻辑删除字段
+  mapper-locations: classpath:mapper/*.xml
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.qian.controller
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# 微信登录认证 id & key
+wechat:
+  appid: wx061d
+  secret: f5fcc4
+
+# aliyun OSS Configurations
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    bucket-name: bkt
+    access-key-id: LTAI5t
+    access-key-secret: hpUtIh
+    region: cn-hangzhou

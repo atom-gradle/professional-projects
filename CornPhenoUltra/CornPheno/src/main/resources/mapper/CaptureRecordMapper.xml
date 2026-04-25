@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qian.mapper.CaptureRecordMapper">
+
+    <resultMap id="StatResultMap" type="com.qian.dto.response.CaptureRecordStatDTO">
+        <result column="block_id" property="blockId"/>
+        <result column="variety_name" property="varietyName"/>
+        <result column="sample_type" property="sampleType"/>
+        <result column="sample_count" property="sampleCount"/>
+        <result column="first_collect_time" property="firstCollectTime"/>
+        <result column="last_update_time" property="lastUpdateTime"/>
+    </resultMap>
+
+    <select id="getCaptureStatistics" resultMap="StatResultMap">
+        SELECT
+            cr.block_id,
+            cr.variety_name,
+            cr.sample_type,
+            COUNT(*) as sample_count,
+            MIN(cr.create_time) as first_collect_time,
+            MAX(cr.update_time) as last_update_time
+        FROM capture_record cr
+        LEFT JOIN media_file mf ON mf.capture_id = cr.id
+        WHERE cr.status BETWEEN 1 AND 3
+        <if test="blockIds != null and blockIds.size() > 0">
+            AND cr.block_id IN
+            <foreach collection="blockIds" item="blockId" open="(" separator="," close=")">
+                #{blockId}
+            </foreach>
+        </if>
+        <if test="startTime != null">
+            AND cr.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND cr.create_time &lt;= #{endTime}
+        </if>
+        GROUP BY cr.block_id, cr.variety_name, cr.sample_type
+        ORDER BY cr.block_id, sample_count DESC
+    </select>
+</mapper>
