@@ -370,7 +370,7 @@ explain ...;
 ```
 `EXPLAIN` 查看语句执行情况
 
-```bash
+```SQL
 mysql> explain  SELECT
     ->  cr.block_id,
     ->  cr.variety_name,
@@ -400,7 +400,7 @@ show index in capture_record;
 select count(distinct block_id),count(distinct variety_name),count(distinct status),count(distinct sample_type) from capture_record;
 ```
 
-```bash
+```SQL
 mysql> show index in capture_record;
 +----------------+------------+-----------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+------------------------------------------------------------+---------+------------+
 | Table          | Non_unique | Key_name        | Seq_in_index | Column_name  | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment                                              | Visible | Expression |
@@ -420,7 +420,7 @@ mysql> show index in capture_record;
 
 `SHOW INDEX` `cadinality`分析字段选择性，其中`block_id`的`cardinality`为9，`variety_name`字段的`cardinality`为501,995，不准确，原因在于`variety_name`列允许NULL值，而MySQL默认抽样20页统计，所以统计不准确
 结合`count(distince field)`查看和评估选择性
-```bash
+```SQL
 mysql> select count(distinct block_id),count(distinct variety_name),count(distinct status),count(distinct sample_type) from capture_record;
 +--------------------------+------------------------------+------------------------+-----------------------------+
 | count(distinct block_id) | count(distinct variety_name) | count(distinct status) | count(distinct sample_type) |
@@ -431,7 +431,7 @@ mysql> select count(distinct block_id),count(distinct variety_name),count(distin
 ```
 设计复合索引，顺序为(`block_id`,`create_time`,`status`,`variety_name`,`sample_type`,`update_time`)
 
-```bash
+```SQL
 +----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
 | id | select_type | table | partitions | type  | possible_keys   | key             | key_len | ref                | rows   | filtered | Extra                                                     |
 +----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
@@ -497,7 +497,7 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/api.ccnupromax.com /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/api.cornpheno.com /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
