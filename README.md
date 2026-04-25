@@ -16,7 +16,7 @@ Welcome to my professional projects repository! This is a collection of programm
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot) 
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)](https://www.mysql.com/) 
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.12-FF6600?logo=rabbitmq)](https://www.rabbitmq.com/) 
-[![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.4.3-000000)](https://baomidou.com/)
+[![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.7-000000)](https://baomidou.com/)
 
 **项目描述：**  
 玉米表型采析系统后端，支持微信登录、采集记录上传、算法服务调用、分析报告生成、文件下载等功能。本人独立完成后端代码编写、迭代优化及生产环境部署。
