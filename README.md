@@ -26,11 +26,11 @@ Welcome to my professional projects repository! This is a collection of programm
     
 -   **服务部署与运维**：基于 `Docker` 打包后端服务，部署至阿里云 ECS；配置域名、DNS服务 及 TLS 证书，通过 `Nginx` 反向代理实现 HTTPS 访问
 
-### 2.[NIO-Turbo](./NIOTurbo/)（从0实现的基于NIO的高性能TCP服务器）
+### 2.[NIO-Turbo](./NIOTurbo/)
 **技术栈：** `Java 21` `NIO` `Reactor模式`
 
 **项目描述：**  
-从0手写实现基于 Reactor 模式的 TCP 服务器，自定义消息体，支持高并发场景下的消息解析与处理。
+从0手写实现的基于 Reactor 模式，NIO API 的 高性能 TCP 服务器，自定义消息体，支持高并发场景下的消息解析与处理。
 
 -   **Reactor 多线程模型**：`MainReactor` 负责监听处理连接请求，`SubReactor` 负责读写事件&业务处理，有效分离连接建立与业务处理
 
