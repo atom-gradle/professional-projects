@@ -11,7 +11,7 @@ Welcome to my professional projects repository! This is a collection of programm
 
 ## 📁 Projects
 
-### 1.[玉米表型采析系统-后端](./CCNUpromax/)
+### 1.[玉米表型采析系统-后端](./CornPhenoUltra/)
 **技术栈：** 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot) [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)](https://www.mysql.com/) [![Redis](https://img.shields.io/badge/Redis-6.0-DC382D?logo=redis)](https://redis.io/) [![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.4.3-000000)](https://baomidou.com/)
 
