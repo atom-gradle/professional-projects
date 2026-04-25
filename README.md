@@ -23,7 +23,7 @@ Welcome to my professional projects repository! This is a collection of programm
 
 -   **用户认证与鉴权**：基于 `Interceptor` + `JWT` 实现无状态认证，结合 `ThreadLocal` 完成用户身份线程级绑定，拦截未登录请求，**保障接口安全性**
     
-- **数据库索引优化**：通过 `EXPLAIN` 分析执行计划，结合 `SHOW INDEX` 中的 `cardinality` 字段评估索引选择性，针对复杂统计查询（多条件筛选 + 分组聚合）设计**覆盖索引**。在 **51万条数据** 规模下，查询耗时从 **1.15s 降至 0.37s**，降低约 **60%**
+- **数据库索引优化**：通过 `EXPLAIN` 分析执行计划，结合 `SHOW INDEX` 中的 `cardinality` 字段、`count(*)` 评估索引选择性，针对复杂统计查询（多条件筛选 + 分组聚合）设计**覆盖索引**。在 **51万条数据** 规模下，查询耗时从 **1.15s 降至 0.33s**，降低约 **70%**
     
 -   **异步处理与解耦**：使用 `DeferredResult` + `RabbitMQ` 异步调用算法服务，释放请求线程，**提升系统吞吐量**；通过消息确认机制保证任务不丢失，加入死信队列，实现更健全的处理机制
     
