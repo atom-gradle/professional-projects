@@ -476,7 +476,7 @@ mvn clean package -DskipTests
 # 2. 上传到服务器
 scp target/cornpheno.jar root@your-server:/app/
 
-# 3. 启动服务（使用 systemd 或 nohup）
+# 3. 启动服务
 nohup java -jar /app/cornpheno.jar --spring.profiles.active=prod > /app/logs/app.log 2>&1 &
 
 # 4. Nginx 配置
