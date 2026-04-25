@@ -2,7 +2,7 @@
 
 > 玉米表型数据采集与分析系统的后端服务，支持微信小程序登录、采集记录管理、算法服务调用、分析报告生成等功能
 
-## ✨ 功能特性
+## ✨ 模块与主要功能
 
 | 模块 | 功能 |
 |------|------|
@@ -13,7 +13,7 @@
 | 报告生成 | 异步生成 PDF 分析报告 |
 | 数据统计 | 多维度聚合统计（地块/品种/时间） |
 
-## 🛠️ 技术栈
+## 🛠️ 技术栈选型
 
 | 技术 | 版本 | 用途 |
 |------|------|------|
@@ -27,6 +27,7 @@
 | Nginx | 1.24 | 反向代理 / HTTPS |
 
 ## 📁 项目结构
+```bash
 src/main/java/com/qian/
 ├── config/ # 配置类
 │ ├── MybatisPlusConfig # MybatisPlus配置
@@ -68,6 +69,7 @@ src/main/java/com/qian/
 │ ├── JwtUtils # JWT 工具类
 │ ├── OSSUtil # 阿里云 OSS 工具类
 │ └── Util # 其他
+```
 
 ## 🚀 快速开始
 
@@ -87,7 +89,7 @@ git clone https://github.com/atom-gradle/CornPheno.git
 cd CornPheno
 ```
 
-### 2.修改配置
+#### 2.修改配置
 ```bash
 spring:
   datasource:
@@ -110,7 +112,11 @@ jwt:
 wx:
   app-id: your-app-id
   app-secret: your-app-secret
+```
 
+#### 3.运行
+
+```bash
 # 开发环境
 mvn spring-boot:run
 
@@ -131,6 +137,7 @@ docker run -d \
 
 ## 核心实现
 ### 1.Interceptor + JWT 实现无状态认证
+
 ```java
 @Override
 public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -228,6 +235,7 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 ```
 
 ### 2.采用RabbitMQ，异步调用算法服务，释放请求线程
+
 ```java
 // AnalysisController.java
 @Operation(
@@ -256,6 +264,7 @@ public Result<?> submitAnalysis(@PathVariable String captureId) {
     return Result.success(deferredResult);
 }
 ```
+
 
 ```java
 // AnalysisResultConsumerService.java
@@ -333,9 +342,6 @@ public void handleDeadLetter(Message message, Channel channel,
 ```
 
 
-
-
-
 ## 性能优化案例
 ### 业务需求：查询某个地块在时间段内的所有采集记录，按品种统计
 ```SQL
@@ -369,6 +375,12 @@ select count(distinct block_id),count(distinct variety_name) from capture_record
 `SHOW INDEX` `cadinality`分析字段选择性，其中`block_id`的`cardinality`为9，`variety_name`字段的`cardinality`为
 
 ### 优化结果
+| 指标 | 优化前 | 优化后 | 提升 |
+|------|------|------|------|
+| 查询耗时 | 1.0s | 0.4s | 60% |
+| 扫描行数	51万（全表） | <1000（索引范围） | 99%+ |
+| 是否回表 | 是 | 否（覆盖索引）| ✅|
+测试说明：数据量 51 万条，MySQL 8.0，Buffer Pool 已预热，取稳定后耗时
 约1.15s -> 稳定0.37s
 
 ## 部署
@@ -407,13 +419,6 @@ nginx -t && systemctl reload nginx
 
 ## API文档
 启动后访问：http://localhost:5000/swagger-ui.html
-
-接口	方法	路径	说明
-微信登录	POST	/api/auth/login	获取 JWT Token
-上传采集记录	POST	/api/records	包含图片/视频
-查询记录列表	GET	/api/records	支持分页、筛选
-生成报告	GET	/api/report/{id}	异步，返回 DeferredResult
-下载报告	GET	/api/report/{id}/download	PDF 文件
 
 ## 许可证
 MIT LISCENCE
