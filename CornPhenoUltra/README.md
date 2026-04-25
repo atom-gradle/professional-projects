@@ -1,3 +1,4 @@
+
 # [玉米表型采析系统后端](./CornPhenoUltra)
 
 > 玉米表型数据采集与分析系统的后端服务，支持微信小程序登录、采集记录管理、算法服务调用、分析报告生成等功能
@@ -71,75 +72,8 @@ src/main/java/com/qian/
 │ └── Util # 其他
 ```
 
-## ⚡ 快速开始
-
-### 环境要求
-
-- JDK 21+
-- MySQL 8.0+
-- Maven 3.8+
-- RabbitMQ 3.x
-
-### 配置
-
-#### 1. 克隆项目
-
-```bash
-git clone https://github.com/atom-gradle/CornPheno.git
-cd CornPheno
-```
-
-#### 2.修改配置
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/db_cornpheno?useSSL=false&serverTimezone=Asia/Shanghai
-    username: your_username
-    password: your_password
-  
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
-# JWT 配置
-jwt:
-  secret: your-jwt-secret-key
-  expiration: 86400000  # 24小时
-
-# 微信小程序配置
-wx:
-  app-id: your-app-id
-  app-secret: your-app-secret
-```
-
-#### 3.运行
-
-```bash
-# 配置数据库
-musqldump -u your_username -p db_cornpheno_backup.sql
-
-# 开发环境
-mvn spring-boot:run
-
-# 生产环境
-mvn clean package
-java -jar target/CornPheno.jar
-
-# 构建镜像
-docker build -t CornPheno .
-
-# 运行容器
-docker run -d \
-  --name CornPheno \
-  -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  CornPheno
-```
-
 ## 核心实现
-### 1.Interceptor + JWT 实现无状态认证
+### 1.`Interceptor` + `JWT` 实现无状态认证
 
 ```java
 @Override
@@ -237,7 +171,7 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 }
 ```
 
-### 2.采用RabbitMQ，异步调用算法服务，释放请求线程
+### 2.采用`RabbitMQ`，异步调用算法服务，释放请求线程
 
 ```java
 // AnalysisController.java
@@ -365,12 +299,8 @@ public void handleDeadLetter(Message message, Channel channel,
 ```
 
 ### 优化过程
-```SQL
-explain ...;
-```
-`EXPLAIN` 查看语句执行情况
-
-```SQL
+#### 1. `EXPLAIN` 查看语句执行情况
+```sql
 mysql> explain  SELECT
     ->  cr.block_id,
     ->  cr.variety_name,
@@ -393,14 +323,9 @@ mysql> explain  SELECT
 +----+-------------+-------+------------+------+----------------+----------------+---------+--------------------+--------+----------+----------------------------------------------+
 2 rows in set, 1 warning (0.01 sec)
 ```
+#### 2. `SHOW INDEX`  `cadinality`分析字段选择性，其中 `block_id` 的 `cardinality` 为9， `variety_name` 字段的 `cardinality` 为501,995，不准确，原因在于 `variety_name` 列允许NULL值，而MySQL默认抽样20页统计，所以统计不准确，故结合 `count(distince field)` 查看和评估选择性
 
-```SQL
-show index in capture_record;
-
-select count(distinct block_id),count(distinct variety_name),count(distinct status),count(distinct sample_type) from capture_record;
-```
-
-```SQL
+```bash
 mysql> show index in capture_record;
 +----------------+------------+-----------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+------------------------------------------------------------+---------+------------+
 | Table          | Non_unique | Key_name        | Seq_in_index | Column_name  | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment                                              | Visible | Expression |
@@ -418,8 +343,8 @@ mysql> show index in capture_record;
 9 rows in set (0.02 sec)
 ```
 
-`SHOW INDEX` `cadinality`分析字段选择性，其中`block_id`的`cardinality`为9，`variety_name`字段的`cardinality`为501,995，不准确，原因在于`variety_name`列允许NULL值，而MySQL默认抽样20页统计，所以统计不准确
-结合`count(distince field)`查看和评估选择性
+#### 3. 通过count(*)结果，结合查询需求综合分析，`vareity_name` 字段选择性最大，但不是 `where` 语句中的条件，`block_id` 选择性强，且是 `where` 语句中的等值条件，排第一，随后是 `status` 字段等值查询，排第二，
+
 ```SQL
 mysql> select count(distinct block_id),count(distinct variety_name),count(distinct status),count(distinct sample_type) from capture_record;
 +--------------------------+------------------------------+------------------------+-----------------------------+
@@ -429,9 +354,9 @@ mysql> select count(distinct block_id),count(distinct variety_name),count(distin
 +--------------------------+------------------------------+------------------------+-----------------------------+
 1 row in set (0.33 sec)
 ```
-设计复合索引，顺序为(`block_id`,`create_time`,`status`,`variety_name`,`sample_type`,`update_time`)
+#### 4. 由上述分析设计复合索引idx_cover_group(`block_id`,`create_time`,`status`,`variety_name`,`sample_type`,`update_time`)，耗时0.37s，通过 `EXPLAIN` 查看执行情况，发现扫描行数304,688仍然太大，于是进一步优化索引
 
-```SQL
+```bash
 +----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
 | id | select_type | table | partitions | type  | possible_keys   | key             | key_len | ref                | rows   | filtered | Extra                                                     |
 +----+-------------+-------+------------+-------+-----------------+-----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
@@ -441,14 +366,39 @@ mysql> select count(distinct block_id),count(distinct variety_name),count(distin
 2 rows in set, 1 warning (0.02 sec)
 ```
 
-### 🔍 优化结果
+#### 5. 设计索引`idx_cover_2`，在 `idx_cover_group` 的基础上调整顺序为(`block_id`,`status`,`sample_type`,`variety_name`,`create_time`,`update_time`)，行数大幅减少至 175,084 行，查询耗时进一步缩短到 0.33s 。原因很可能是由于 `status` 字段范围 `1-4` 分布较均匀，而 `create_time` 字段大部分都集中分布在查询范围内（2026年），导致过滤性较差
+
+```sql
+mysql> explain  SELECT
+    ->  cr.block_id,
+    ->  cr.variety_name,
+    ->  cr.sample_type,
+    ->  COUNT(*) as sample_count,
+    ->  MIN(cr.create_time) as first_collect_time,
+    ->  MAX(cr.update_time) as last_update_time
+    ->  FROM capture_record cr
+    ->  LEFT JOIN media_file mf ON mf.capture_id = cr.id
+    ->  WHERE cr.status between 1 and 3  -- 已完成分析的
+    ->  AND cr.block_id IN ('BLOCK_D01', 'BLOCK_B01', 'BLOCK_E01')
+    ->  AND cr.create_time BETWEEN '2026-01-01 00:00:00' AND '2026-12-31 00:00:00'
+    ->  GROUP BY cr.block_id, cr.variety_name, cr.sample_type
+    ->  ORDER BY cr.block_id, sample_count DESC;
++----+-------------+-------+------------+-------+-----------------------------------------+----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
+| id | select_type | table | partitions | type  | possible_keys                           | key            | key_len | ref                | rows   | filtered | Extra                                                     |
++----+-------------+-------+------------+-------+-----------------------------------------+----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
+|  1 | SIMPLE      | cr    | NULL       | range | idx_cover_group,idx_cover_2,idx_cover_3 | idx_cover_2    | 132     | NULL               | 175084 |    11.11 | Using where; Using index; Using temporary; Using filesort |
+|  1 | SIMPLE      | mf    | NULL       | ref   | idx_capture_fk                          | idx_capture_fk | 8       | db_cornpheno.cr.id |      1 |   100.00 | Using index                                               |
++----+-------------+-------+------------+-------+-----------------------------------------+----------------+---------+--------------------+--------+----------+-----------------------------------------------------------+
+2 rows in set, 1 warning (0.00 sec)
+```
+
+### 🔍 最终优化结果
 | 指标 | 优化前 | 优化后 | 提升 |
 |------|------|------|------|
-| 查询耗时 | 1.15s | 0.37s | 60% |
-| 扫描行数 | 51万（全表） | <1000（索引范围） | 99%+ |
-| 是否回表 | 是 | 否（覆盖索引）| ✅ |
+| 查询耗时 | 1.15s | 0.33s | 70% |
+| 扫描行数 | 510,000（全表） | 175084 | 65% |
 
-测试说明：数据量 51 万条，MySQL 8.0.41，Buffer Pool 已预热，取稳定后耗时
+#### 测试说明：数据量 51 万条，MySQL 8.0.41，Buffer Pool 已预热，取稳定后耗时
 ```bash
 mysql> select count(*) from capture_record;
 +----------+
@@ -470,17 +420,22 @@ mysql> select count(*) from media_file;
 ## 🚀 部署
 
 ```bash
-# 1. 打包
-mvn clean package -DskipTests
+# 1. 在项目根目录创建 Dockerfile
+FROM openjdk:17-jdk-slim
+COPY target/cornpheno.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar", "--spring.profiles.active=prod", "--server.port=5000"]
 
-# 2. 上传到服务器
-scp target/cornpheno.jar root@your-server:/app/
+# 2. 打包并构建镜像
+mvn clean package
+docker build -t cornpheno:latest .
 
-# 3. 启动服务
-nohup java -jar /app/cornpheno.jar --spring.profiles.active=prod > /app/logs/app.log 2>&1 &
+# 3. 上传到服务器并运行
+docker save cornpheno:latest | ssh root@your-server 'docker load'
+docker run -d --name cornpheno -p 5000:5000 --restart=always cornpheno:latest
 
 # 4. Nginx 配置
-cat > /etc/nginx/sites-available/api.cornpheno.com << 'EOF'
+ssh root@your-server << 'EOF'
+cat > /etc/nginx/sites-available/api.cornpheno.com << 'END'
 server {
     listen 443 ssl http2;
     server_name api.cornpheno.com;
@@ -489,16 +444,16 @@ server {
     ssl_certificate_key /etc/nginx/ssl/key.pem;
     
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
-EOF
+END
 
-ln -s /etc/nginx/sites-available/api.cornpheno.com /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/api.cornpheno.com /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
+EOF
 ```
 
 ## 📖 API文档
