@@ -71,7 +71,7 @@ src/main/java/com/qian/
 │ └── Util # 其他
 ```
 
-## 🚀 快速开始
+## ⚡ 快速开始
 
 ### 环境要求
 
@@ -345,7 +345,7 @@ public void handleDeadLetter(Message message, Channel channel,
 ```
 
 
-## 性能优化案例
+## 🚀性能优化案例
 ### 业务需求：查询某个地块在时间段内的所有采集记录，按品种统计
 ```SQL
  SELECT
@@ -441,32 +441,49 @@ mysql> select count(distinct block_id),count(distinct variety_name),count(distin
 2 rows in set, 1 warning (0.02 sec)
 ```
 
-### 优化结果
+### 🔍 优化结果
 | 指标 | 优化前 | 优化后 | 提升 |
 |------|------|------|------|
 | 查询耗时 | 约1.15s | 稳定0.37s | 60% |
 | 扫描行数 | 51万（全表） | <1000（索引范围） | 99%+ |
 | 是否回表 | 是 | 否（覆盖索引）| ✅ |
 
-测试说明：数据量 51 万条，MySQL 8.0，Buffer Pool 已预热，取稳定后耗时
+测试说明：数据量 51 万条，MySQL 8.0.41，Buffer Pool 已预热，取稳定后耗时
+```bash
+mysql> select count(*) from capture_record;
++----------+
+| count(*) |
++----------+
+|   510000 |
++----------+
+1 row in set (0.05 sec)
 
-## 部署
+mysql> select count(*) from media_file;
++----------+
+| count(*) |
++----------+
+|   765297 |
++----------+
+1 row in set (0.06 sec)
+```
+
+## 🚀 部署
 
 ```bash
 # 1. 打包
 mvn clean package -DskipTests
 
 # 2. 上传到服务器
-scp target/ccnupromax-backend.jar root@your-server:/app/
+scp target/cornpheno.jar root@your-server:/app/
 
 # 3. 启动服务（使用 systemd 或 nohup）
-nohup java -jar /app/ccnupromax-backend.jar --spring.profiles.active=prod > /app/logs/app.log 2>&1 &
+nohup java -jar /app/cornpheno.jar --spring.profiles.active=prod > /app/logs/app.log 2>&1 &
 
 # 4. Nginx 配置
-cat > /etc/nginx/sites-available/api.ccnupromax.com << 'EOF'
+cat > /etc/nginx/sites-available/api.cornpheno.com << 'EOF'
 server {
     listen 443 ssl http2;
-    server_name api.ccnupromax.com;
+    server_name api.cornpheno.com;
     
     ssl_certificate /etc/nginx/ssl/cert.pem;
     ssl_certificate_key /etc/nginx/ssl/key.pem;
@@ -484,12 +501,12 @@ ln -s /etc/nginx/sites-available/api.ccnupromax.com /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-## API文档
+## 📖 API文档
 启动后访问：http://localhost:5000/swagger-ui.html
 
-## 许可证
+## 📄 许可证
 MIT LISCENCE
 
-## 联系我
-pro.gradle@outlook.com
+## 📧 联系我
+e-mail: pro.gradle@outlook.com
 
