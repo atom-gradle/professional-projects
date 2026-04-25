@@ -27,7 +27,7 @@
 | Nginx | 1.24 | 反向代理 / HTTPS |
 
 ## 📁 项目结构
-```bash
+```text
 src/main/java/com/qian/
 ├── config/ # 配置类
 │ ├── MybatisPlusConfig # MybatisPlus配置
@@ -90,7 +90,7 @@ cd CornPheno
 ```
 
 #### 2.修改配置
-```bash
+```yaml
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/db_cornpheno?useSSL=false&serverTimezone=Asia/Shanghai
