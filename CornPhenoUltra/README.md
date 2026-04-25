@@ -16,14 +16,14 @@
 
 ## ✨ 功能特性
 
-| 模块 | 功能 | 状态 |
-|------|------|------|
-| 用户认证 | 微信小程序登录 / JWT 无状态认证 | ✅ 完成 |
-| 采集记录 | 上传、查询、修改、删除 | ✅ 完成 |
-| 文件管理 | 图片/视频上传、存储、下载 | ✅ 完成 |
-| 算法调用 | RabbitMQ 异步调用分析服务 | ✅ 完成 |
-| 报告生成 | 异步生成 PDF 分析报告 | ✅ 完成 |
-| 数据统计 | 多维度聚合统计（地块/品种/时间） | ✅ 完成 |
+| 模块 | 功能 |
+|------|------|
+| 用户认证 | 微信小程序登录 / JWT 无状态认证 |
+| 采集记录 | 上传、查询、修改、删除 |
+| 文件管理 | 图片/视频上传、存储、下载 |
+| 算法调用 | RabbitMQ 异步调用分析服务 |
+| 报告生成 | 异步生成 PDF 分析报告 |
+| 数据统计 | 多维度聚合统计（地块/品种/时间） |
 
 ## 🛠️ 技术栈
 
@@ -41,16 +41,30 @@
 ## 📁 项目结构
 src/main/java/com/qian/
 ├── config/ # 配置类
+│ ├── MybatisPlusConfig # MybatisPlus配置
+│ ├── RabbitMQConfig # 消RabbitMQ配置
+│ ├── RestTemplateConfig # RestTemplate配置
 │ ├── SecurityConfig # Spring Security 配置
-│ ├── RabbitMQConfig # 消息队列配置
-│ └── WebConfig # 跨域等配置
+│ ├── VirtualThreadConfig # 虚拟线程池配置
+│ ├── WebConfig # 拦截器配置
+│ └── WebMvcConfiguration # API文档、跨域、限定访问域名等配置
 ├── controller/ # 控制器层
 │ ├── AdminController # 管理端
-│ ├── AnalysisController # 报告生成
-│ ├── AuthController # 微信登录 / JWT
-│ ├── RecordController # 采集记录 CRUD
-│ ├── FileController # 文件上传下载
+│ ├── AnalysisController # 分析报告生成
+│ ├── AuthController # 微信登录，登出
+│ ├── CaptureRecordController # 采集记录 CRUD
+│ ├── MediaFileController # 文件上传下载
 │ └── UserController # 用户管理
+├── dto/ # 数据传输对象
+│ ├── request
+│ ├── response
+│ ├── AnalysisRequestMessage
+│ ├── AnalysisTaskRequest
+├── exception/ # 自定义异常类
+│ ├── AuthenticationFailureException
+│ ├── response
+│ ├── AnalysisRequestMessage
+│ ├── AnalysisTaskRequest
 ├── service/ # 业务逻辑层
 │ ├── impl/ # 实现类
 ├── mapper/ # MyBatis-Plus Mapper
@@ -69,7 +83,7 @@ src/main/java/com/qian/
 - JDK 21+
 - MySQL 8.0+
 - Maven 3.8+
-- RabbitMQ 3.x（可选，可关闭）
+- RabbitMQ 3.x
 
 ### 配置
 
@@ -221,7 +235,109 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 ```
 
 ### 2.采用RabbitMQ，异步调用算法服务，释放请求线程
+```java
+// AnalysisController.java
+@Operation(
+        summary = "提交分析请求",
+        description = "为指定的captureId提交采集记录进行AI分析"
+)
+@GetMapping("/{captureId}/submit")
+public Result<?> submitAnalysis(@PathVariable String captureId) {
+    log.info("收到分析请求: captureId={}", captureId);
 
+    // 35s超时
+    DeferredResult<Object> deferredResult = new DeferredResult<>(35000L);
+
+    var future = analysisReportService.submitAnalysis(captureId);
+
+    future.whenComplete((result, throwable) -> {
+        if(throwable != null) {
+            log.error("分析任务失败");
+            deferredResult.setErrorResult(throwable.getMessage());
+        } else {
+            log.info("分析任务成功");
+            deferredResult.setResult(result);
+        }
+    });
+
+    return Result.success(deferredResult);
+}
+```
+
+```java
+// AnalysisResultConsumerService.java
+/**
+ * 监听结果队列，接收Python算法服务返回的结果
+ */
+@RabbitListener(queues = RabbitMQConfig.RESULT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+public void consumeResult(AnalysisResultMessage result, Message message, Channel channel) {
+    try {
+        log.info("收到计算结果: taskId={}, 结果={}, 耗时={}ms",
+                result.getTaskId(),
+                result.getResultUrl(),
+                result.getElapsedTime());
+
+        analysisServiceImpl.completeTask(result.getTaskId(), result);
+
+        channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+
+    } catch (Exception e) {
+        log.error("处理结果失败: {}", e.getMessage(), e);
+        try {
+            // 拒收消息，不重新入队
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
+        } catch (Exception ex) {
+            log.error("确认消息失败", ex);
+        }
+    }
+}
+
+/**
+ * 处理死信队列的消息
+ */
+@RabbitListener(queues = RabbitMQConfig.DEAD_LETTER_QUEUE)
+public void handleDeadLetter(Message message, Channel channel,
+                             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) {
+    try {
+        String body = new String(message.getBody());
+        log.error("收到死信消息: {}", body);
+
+        try {
+            AnalysisTaskRequest task = objectMapper.readValue(body, AnalysisTaskRequest.class);
+            String captureId = task.getCaptureId();
+
+            // 更新数据库状态为失败
+            AnalysisReport report = analysisServiceImpl.getOne(
+                    new LambdaQueryWrapper<AnalysisReport>()
+                            .eq(AnalysisReport::getCaptureId, captureId)
+            );
+
+            if (report != null) {
+                report.setStatus(3);// 失败状态
+                report.setErrorMessage("任务处理失败，已进入死信队列");
+                report.setUpdateTime(LocalDateTime.now());
+                analysisServiceImpl.updateById(report);
+            }
+
+            analysisServiceImpl.completeTaskExceptionally(captureId, "任务处理失败");
+
+        } catch (Exception e) {
+            log.error("解析死信消息失败", e);
+        }
+
+        channel.basicAck(deliveryTag, false);
+
+    } catch (Exception e) {
+        log.error("处理死信消息失败", e);
+        try {
+            // 如果处理死信也失败，记录日志后确认，避免无限循环
+            channel.basicAck(deliveryTag, false);
+        } catch (IOException ex) {
+            log.error("确认死信消息失败", ex);
+        }
+    }
+}
+```
 
 
 
