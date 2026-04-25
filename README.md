@@ -1,6 +1,5 @@
 # professional-projects
 
-欢迎来到professional-projects仓库！这里放着我的求职作品。
 Welcome to my professional projects repository! This is a collection of programming projects for job-seeking.
 
 ## About Me
