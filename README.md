@@ -25,7 +25,7 @@ Welcome to my professional projects repository! This is a collection of programm
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
 
 **项目描述：**
-基于 Spring AI + DeepSeek 的跨境电商合规 Agent Demo。用户输入商品描述或"种草笔记"，Agent 自动提取商品信息，通过 Function Calling 调用多个工具，生成结构化的合规报告。
+借助Cursor快速开发，基于 Spring AI + DeepSeek 构建的 AI Agent 应用，实现多轮对话、工具调用和结构化报告生成。用户输入商品描述，Agent 自主决策调用合规检查、风险检测、税费估算三个工具，输出合规报告。
 
 **核心功能：**
 - **多轮对话记忆**：基于 `ChatMemory` + Redis 实现会话上下文管理，按 sessionId 隔离
@@ -33,10 +33,11 @@ Welcome to my professional projects repository! This is a collection of programm
 - **营销用语风险检测**：检测宣传文案中的绝对化用语和风险关键词，返回低/中/高三档风险等级及修改建议
 - **跨境税费估算**：根据品类和目标国家估算综合税率，计算税费和含税总价
 
-**技术亮点：**
-- AI 自主决策调用工具（Function Calling），无需硬编码 if-else
-- 完整的工程化实践：Docker Compose 一键启动、Flyway 管理数据库版本、Swagger 自动生成 API 文档
-- 支持同步对话和 SSE 流式输出（流式接口已预留）
+**项目亮点：**
+- **Agent 工具编排**：使用 Spring AI 的 **@Tool** 注解 + **MethodToolCallbackProvider** 注册 3 个工具函数；LLM 根据用户输入自主决策调用顺序和组合，实现 **Function Calling** 完整链路
+- **对话记忆管理**：基于 **ChatMemory** + Redis 实现会话上下文隔离，支持多轮连续对话；MySQL 持久化存储会话和消息历史
+- **工程化落地**：Docker Compose 一键启动 MySQL + Redis；Flyway 管理数据库版本；Swagger 自动生成 API 文档；配置多环境分离（dev/prod）
+- **性能验证**：三个工具并行调用，减少端到端响应时间；Redis 缓存会话上下文，减少重复 LLM 调用
 
 **API 示例：**
 ```bash
