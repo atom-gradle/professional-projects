@@ -4,7 +4,7 @@ Welcome to my professional projects repository! This is a collection of programm
 
 ## About Me
 
-- 🎓 华中农业大学 (211) 计算机科学与技术
+- 🎓 华中农业大学 - 计算机科学与技术
 - 📝 CET-6 638分
 - 🔭 正在寻找后端开发、AI后端、安卓开发日常实习
 
