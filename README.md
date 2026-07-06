@@ -10,7 +10,22 @@ Welcome to my professional projects repository! This is a collection of programm
 
 ## 📁 Projects
 
-### 1.[玉米表型采析系统-后端](./CornPhenoUltra/)
+### 1.[My-AI-Agent](./my-ai-agent/)
+**技术栈：** 
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/) 
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot) 
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)](https://www.mysql.com/) 
+[![Redis](https://img.shields.io/badge/Redis-7-FF6600?logo=rabbitmq)](https://www.rabbitmq.com/) 
+[![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.7-000000)](https://baomidou.com/)
+
+**项目描述：**  
+AI Agent demo
+
+-   **热点缓存**：采用 `Redis` 缓存，**避免大量请求打到MySQL导致宕机**
+    
+- **API调用**：使用DeepSeek API
+
+### 2.[玉米表型采析系统-后端](./CornPhenoUltra/)
 **技术栈：** 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/) 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot) 
@@ -29,7 +44,7 @@ Welcome to my professional projects repository! This is a collection of programm
     
 -   **服务部署与运维**：基于 `Docker` 打包后端服务，部署至阿里云 ECS；配置域名、DNS服务 及 TLS 证书，通过 `Nginx` 反向代理实现 HTTPS 访问
 
-### 2.[NIO-Turbo](./NIOTurbo/)
+### 3.[NIO-Turbo](./NIOTurbo/)
 **技术栈：** `Java 21` `NIO` `Reactor模式`
 
 **项目描述：**  
