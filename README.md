@@ -38,13 +38,6 @@ Welcome to my professional projects repository! This is a collection of programm
 - 完整的工程化实践：Docker Compose 一键启动、Flyway 管理数据库版本、Swagger 自动生成 API 文档
 - 支持同步对话和 SSE 流式输出（流式接口已预留）
 
-**启动方式：**
-```bash
-cd docker && docker compose up -d
-export DEEPSEEK_API_KEY="sk-xxx"
-mvn spring-boot:run
-```
-
 **API 示例：**
 ```bash
 # 创建会话
