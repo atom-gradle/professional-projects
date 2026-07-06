@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  ai:
+    openai:
+      api-key: test-key
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          model: deepseek-chat
+
+agent:
+  memory:
+    max-messages: 5
+  session:
+    cache-ttl-minutes: 10
