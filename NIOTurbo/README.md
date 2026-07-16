@@ -17,17 +17,16 @@
 ## 📁 项目结构
 ```bash
 NIOTurbo/
+├── HighConcurrentTestClient.java # 高并发压测客户端
+├── Main # 服务器启动类
 ├── MainReactor.java # 主Reactor（处理连接）
-├── SubReactor.java # 从Reactor（处理IO）
 ├── Msg.java # 消息实体
 ├── MsgPool.java # 对象池
-├── Util.java # 工具类（MD5校验）
-├── HighConcurrentTestClient.java # 高并发压测客户端
-└── Main.java # 服务端启动类
+├── SubReactor.java # 从Reactor（处理IO）
+└── Util.java # 工具类（MD5校验）
 ```
 
 ## 🚀 快速开始
-
 ### 启动服务器
 
 ```bash
@@ -35,15 +34,17 @@ NIOTurbo/
 javac NIOTurbo/*.java
 
 # 运行
-java NIOTurbo.MainReactor
+java NIOTurbo.Main
 ```
 
 输出：
-```bash
+```
+SubReactor launched
+SubReactor launched
+SubReactor launched
+SubReactor launched
+SubReactor launched
 Server launches, listening for port 8000
-SubReactor launched
-SubReactor launched
-...
 ```
 
 ### 启动高并发压测客户端
@@ -57,6 +58,7 @@ java NIOTurbo.HighConcurrentTestClient
 | 长度 | 4 B | 30 B | B | 19 B | 4B | 4B | 3B | variable | 32 B |
 |------|------|------|------|------|------|------|------|------|------|
 | 字段 | length | from | to | when | type | state | fileExt | content | md5check |
+122+ Bytes
 
 ### 消息示例
 ```json
@@ -225,7 +227,7 @@ subExecutor.execute(() -> {
 | CPU | R7 8845H (16T) |
 | OS | Windows 11 25H2 |
 | 网络 | localhost |
-| 客户端总数 | 2,000 |
+| 模拟客户端总数 | 2,000 |
 | 每个客户端发送消息数 | 500 |
 | 总消息数 | 1,000,000 |
 
