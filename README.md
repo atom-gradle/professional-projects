@@ -43,7 +43,8 @@ Welcome to my professional projects repository! This is a collection of programm
 ```bash
 # 创建会话
 curl -X POST http://localhost:8080/api/sessions -H "Content-Type: application/json" -d "{}"
-
+```
+```
 # 发送消息（Agent 自动调用三个工具）
 curl -X POST http://localhost:8080/api/agent/sessions/1/chat \
   -H "Content-Type: application/json" \
@@ -90,13 +91,13 @@ curl -X POST http://localhost:8080/api/agent/sessions/1/chat \
 - **对象池优化**：借鉴享元模式思想，设计 Msg 消息体对象池 `MsgPool`，通过复用已有对象，有效减少对象在新生代和老年代之间的拷贝和 GC 停顿，提升系统吞吐量
 
 **性能验证：**
-模拟 1000 个并发连接，每连接发送 100 条消息（含 MD5 校验 + ACK 响应），在 R7 8845H 轻薄本，localhost 测得：
+模拟 2000 个并发连接，每连接发送 500 条消息（含 MD5 校验 + ACK 响应），在 R7 8845H 轻薄本，localhost 测得：
 
 | 指标 | 数值 |
 |------|------|
-| 端到端吞吐量 | **6,600+ QPS** |
+| 端到端吞吐量 | **52,000+ QPS** |
 | 平均响应延迟 | **25.37 ms** |
-| 成功率 | **100%**（10万消息0丢失） |
+| 成功率 | **100%**（100万消息0丢失） |
 
 ---
 
