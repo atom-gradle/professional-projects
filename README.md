@@ -28,15 +28,15 @@ Welcome to my professional projects repository! This is a collection of programm
 借助Cursor快速开发，基于 Spring AI + DeepSeek 构建的 AI Agent 应用，实现多轮对话、工具调用和结构化报告生成。用户输入商品描述，Agent 自主决策调用合规检查、风险检测、税费估算三个工具，输出合规报告。
 
 **核心功能：**
-- **多轮对话记忆**：基于 `ChatMemory` + Redis 实现会话上下文管理，按 sessionId 隔离
+- **多轮对话记忆**：基于 `ChatMemory` + **Redis** 实现会话上下文管理，按 sessionId 隔离
 - **品类合规检查**：检查商品品类在 US/EU/CN/JP/UK/AU 等国家是否受限，内置受限品类规则库
 - **营销用语风险检测**：检测宣传文案中的绝对化用语和风险关键词，返回低/中/高三档风险等级及修改建议
 - **跨境税费估算**：根据品类和目标国家估算综合税率，计算税费和含税总价
 
 **项目亮点：**
-- **Agent 工具编排**：使用 Spring AI 的 **@Tool** 注解 + **MethodToolCallbackProvider** 注册 3 个工具函数；LLM 根据用户输入自主决策调用顺序和组合，实现 **Function Calling** 完整链路
-- **对话记忆管理**：基于 **ChatMemory** + Redis 实现会话上下文隔离，支持多轮连续对话；MySQL 持久化存储会话和消息历史
-- **工程化落地**：Docker Compose 一键启动 MySQL + Redis；Flyway 管理数据库版本；Swagger 自动生成 API 文档；配置多环境分离（dev/prod）
+- **Agent 工具编排**：使用 **Spring AI** 的 **@Tool** 注解 + **MethodToolCallbackProvider** 注册 3 个工具函数；LLM 根据用户输入自主决策调用顺序和组合，实现 **Function Calling** 完整链路
+- **对话记忆管理**：基于 **ChatMemory** + **Redis** 实现会话上下文隔离，支持多轮连续对话；**MySQL** 持久化存储会话和消息历史
+- **工程化落地**：Docker Compose 一键启动 MySQL + Redis；Flyway 管理数据库版本
 - **性能验证**：三个工具并行调用，减少端到端响应时间；Redis 缓存会话上下文，减少重复 LLM 调用
 
 **API 示例：**
@@ -98,8 +98,6 @@ curl -X POST http://localhost:8080/api/agent/sessions/1/chat \
 | 平均响应延迟 | **25.37 ms** |
 | 成功率 | **100%**（10万消息0丢失） |
 
-**项目链接：** https://github.com/atom-gradle/professional-projects/tree/main/NIOTurbo
-
 ---
 
 ## 🛠️ 技术能力总览
@@ -107,11 +105,11 @@ curl -X POST http://localhost:8080/api/agent/sessions/1/chat \
 | 领域 | 技术 |
 |------|------|
 | 后端框架 | Spring Boot, MyBatis-Plus, Spring AI |
-| 中间件 | MySQL, Redis, RabbitMQ |
+| 中间件 | MySQL, Redis, RabbitMQ, PostgreSQL |
 | 语言 | Java, Python |
-| AI 工具 | Cursor, DeepSeek, Kimi |
+| AI 工具 | Cursor, DeepSeek |
 | 运维部署 | Docker, Linux, Nginx, 阿里云 ECS |
-| 构建和管理 | Maven、Gradle、Git |
+| 构建和管理 | Maven, Gradle, Git |
 
 ---
 
