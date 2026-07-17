@@ -6,7 +6,7 @@ Welcome to my professional projects repository! This is a collection of programm
 
 - 🎓 华中农业大学 - 计算机科学与技术（2024.9 - 2028.6）
 - 📝 CET-6 638分
-- 📍 上海户口 | 可全职实习6个月（2026.07 - 2027.01，每周5天）
+- 📍 上海户口 | 可全职实习3个月（每周5天）
 - 🔭 正在寻找后端开发、AI后端、全栈开发日常实习
 
 ---
