@@ -1,12 +1,24 @@
+**项目描述：**
+RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向量数据库与 DeepSeek 大语言模型构建。支持多格式知识库导入（JSON/TXT）、语义检索与生成式问答。本人独立开发。
+
+### 📁 项目结构
+```
+RAGSystem/
+├── knowledge_base # 知识文档存放位置
+├── models # sentence-transformer模型
+├── config.py # 配置类
+├── Log.py # 日志打印
+├── RAG-System-v2.py # RAG系统
+├── SemanticChunker.py # 语义分块器
+└── util.py # 工具类
+```
+
 **技术栈：**
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![pgvector](https://img.shields.io/badge/pgvector-0.8.2-4169E1)](https://github.com/pgvector/pgvector)
 [![DeepSeek](https://img.shields.io/badge/DeepSeek-API-4D6BFE?logo=deepseek)](https://platform.deepseek.com/)
 [![Sentence-Transformers](https://img.shields.io/badge/Sentence--Transformers-2.2.2-FFD43B)](https://www.sbert.net/)
-
-**项目描述：**
-RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向量数据库与 DeepSeek 大语言模型构建。支持多格式知识库导入（JSON/TXT/Markdown）、语义检索与生成式问答。本人独立开发。
 
 **核心功能：**
 - **向量化检索与存储**：基于 `pgvector` 扩展实现向量数据的持久化存储与索引，结合 `IVFFlat` 或 `HNSW` 算法加速近似最近邻搜索。通过 `cosine` 距离计算语义相似度
@@ -15,3 +27,30 @@ RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向
 - **LLM 集成与对话生成**：基于 `OpenAI SDK` 调用 `DeepSeek-v4-flash` 模型生成高质量回答。通过精心设计的 `System Prompt` 约束模型行为，实现「仅基于上下文回答」与「拒绝幻觉」的可靠机制
 - **数据库性能优化**：通过 `EXPLAIN ANALYZE` 分析查询计划，为向量相似度搜索建立 `IVFFlat` 索引（`lists=100`）。结合 `JSONB` 字段存储元数据，支持灵活的文档分类与过滤
 - **异步与容错机制**：实现数据库连接池管理（`psycopg2` 事务控制），提供完整的错误捕获与事务回滚。Embedding 生成失败时自动重试，保证数据一致性
+
+### 配置和启动
+**方式一**
+
+1.下载所需依赖
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+2.安装PostgreSQL和pgvector拓展
+
+3.替换config.py中的deepseek-api-key
+```
+# config.py
+
+# DeepSeek API配置
+deepseek_api_key: str = "YOUR_API_KEY"
+deepseek_base_url: str = "https://api.deepseek.com/v1"
+chat_model: str = "deepseek-v4-flash"
+```
+
+4.运行
+```bash
+python RAG-System-v2
+```
+
+**方式二 (Docker)** 
