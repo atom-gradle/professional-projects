@@ -74,7 +74,7 @@ RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向
 - **服务部署与运维**：基于 `Docker Compose` 一键启动 PostgreSQL + pgvector 容器，配置持久化存储。通过 `.env` 环境变量管理敏感配置，支持 `Docker` 镜像打包与 `ECS` 云端部署
 
 ---
-2. RAG-System (RAG 知识库系统)
+### 2. RAG-System (RAG 知识库系统)
 **技术栈：**
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)](https://www.postgresql.org/)
@@ -95,7 +95,7 @@ RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向
 
 ---
 
-### 2. [玉米表型采析系统-后端](./CornPhenoUltra/)
+### 3. [玉米表型采析系统-后端](./CornPhenoUltra/)
 
 **技术栈：**
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/)
@@ -118,7 +118,7 @@ RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向
 
 ---
 
-### 3. [NIO-Turbo](./NIOTurbo/)
+### 4. [NIO-Turbo](./NIOTurbo/)
 
 **技术栈：**
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/)
