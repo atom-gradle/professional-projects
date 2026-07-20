@@ -53,6 +53,7 @@ curl -X POST http://localhost:8080/api/agent/sessions/1/chat \
 
 ---
 
+### 2. RAG-System (RAG 知识库系统)
 **技术栈：**
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)](https://www.postgresql.org/)
@@ -152,7 +153,7 @@ RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向
 | 语言 | Java, Python |
 | AI 工具 | Cursor, DeepSeek |
 | 运维部署 | Docker, Linux, Nginx, 阿里云 ECS |
-| 构建和管理 | Maven, Gradle, Git |
+| 构建和管理 | Maven, Gradle |
 
 ---
 
