@@ -1,0 +1,8 @@
+psycopg2-binary
+pgvector
+sqlalchemy
+openai
+pandas
+numpy
+tiktoken
+sentence_transformers
