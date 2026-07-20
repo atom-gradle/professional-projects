@@ -15,7 +15,7 @@
 - **完整的压测验证**：高并发压测客户端，测量端到端性能
 
 ## 📁 项目结构
-```bash
+```
 NIOTurbo/
 ├── HighConcurrentTestClient.java # 高并发压测客户端
 ├── Main # 服务器启动类
