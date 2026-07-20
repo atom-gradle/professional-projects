@@ -128,7 +128,7 @@ public void read(SelectionKey key) {
         }
 
         // 读取消息体
-        ByteBuffer msgBuffer = ByteBuffer.allocate(msgLength);
+        ByteBuffer msgBuffer = ByteBuffer.allocateDirect(msgLength);
         while (msgBuffer.hasRemaining()) {
             bytesRead = client.read(msgBuffer);
             if (bytesRead == -1) {
@@ -137,25 +137,19 @@ public void read(SelectionKey key) {
         }
 
         msgBuffer.flip();
-        byte[] data = new byte[msgLength];
-        msgBuffer.get(data);
 
-        subExecutor.execute(() -> {
+        Thread.startVirtualThread(() -> {
             try {
-                Msg recoveredMsg = new Msg(data);
-                recoveredMsg.setLength(msgLength);
+                //Msg recoveredMsg = new Msg(data);
+                //recoveredMsg.setLength(msgLength);
+                Msg recoveredMsg = new Msg(msgBuffer, msgLength);
 
-                String response;
                 if(!Util.verifyMsg(recoveredMsg)) {
-                    System.out.println("Validation Failed");
-                    response = "FAIL: Invalid message checksum";
+                    //if(!Util.verifyMsg(data)) {
+                    //System.out.println("Validation Failed");
                 } else {
-                    System.out.println(recoveredMsg);
-                    response = "ACK: Message received and verified successfully";
+                    sendSuccessResponse(client);
                 }
-
-                // 响应回复客户端
-                sendResponse(client, response);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -173,7 +167,7 @@ public void read(SelectionKey key) {
     }
 }
 ```
-分离连接请求和业务IO，极大提升系统吞吐量
+分离连接请求和业务IO，采用Java 21+提供的虚拟线程，极大提升了系统吞吐量
 
 ### 2.对象池优化
 ```java
