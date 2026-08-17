@@ -2,14 +2,6 @@
 
 Welcome to my professional projects repository! This is a collection of programming projects for job-seeking.
 
-## About Me
-
-- 🎓 华中农业大学 - 计算机科学与技术（2024.9 - 2028.6）
-- 📍 上海户口 | 可全职实习（每周5天）
-- 🔭 正在寻找AI后端、后端开发、全栈开发日常实习
-
----
-
 ## 📁 Projects
 
 ### 1. [AI 跨境电商合规助手](./my-ai-agent/)
