@@ -126,8 +126,3 @@ RAG（检索增强生成）智能问答系统，基于 PostgreSQL + pgvector 向
 | 运维部署 | Docker, Linux, Nginx, 阿里云 ECS |
 | 构建和管理 | Maven, Gradle |
 
----
-
-## 📫 Contact Me
-
-- 📧 Email: pro.gradle@outlook.com
